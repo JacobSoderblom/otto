@@ -35,6 +35,8 @@ func Test_App(t *testing.T) {
 func goServe(a *App, wg *sync.WaitGroup) {
 	go func() {
 		defer wg.Done()
-		a.Serve()
+		if err := a.Serve(); err != nil {
+			panic(err)
+		}
 	}()
 }
