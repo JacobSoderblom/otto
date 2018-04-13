@@ -2,7 +2,6 @@ package otto
 
 import (
 	gocontext "context"
-	"crypto/tls"
 	"net/http"
 	"os"
 	"os/signal"
@@ -31,7 +30,6 @@ func NewOptions() Options {
 type App struct {
 	*Router
 	opts Options
-	tls  *tls.Config
 }
 
 // New creates a new App

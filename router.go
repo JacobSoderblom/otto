@@ -18,7 +18,6 @@ type Router struct {
 	routes        Routes
 	strictSlash   bool
 	errorHandlers ErrorHandlers
-	charset       string
 }
 
 // NewRouter creates a new Router with some default values
@@ -104,15 +103,25 @@ func (r *Router) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 func (r *Router) serveFiles(fs http.FileSystem) http.HandlerFunc {
 	s := http.FileServer(fs)
 	return func(res http.ResponseWriter, req *http.Request) {
-		if _, err := fs.Open(path.Clean(req.URL.Path)); os.IsNotExist(err) {
-			ctx := &context{
-				res: &Response{
-					ResponseWriter: res,
-					size:           0,
-				},
-				req: req,
+
+		if _, err := fs.Open(path.Clean(req.URL.Path)); err != nil {
+			if os.IsNotExist(err) {
+				ctx := &context{
+					res: &Response{
+						ResponseWriter: res,
+						size:           0,
+					},
+					req: req,
+				}
+				h := r.errorHandlers.Get(404)
+				if err = h(404, errors.Errorf("could not find %s", req.URL), ctx); err != nil {
+					http.Error(res, err.Error(), 500)
+					return
+				}
+				return
 			}
-			r.errorHandlers.Get(404)(404, errors.Errorf("could not find %s", req.URL), ctx)
+			http.Error(res, err.Error(), 500)
+			return
 		}
 		s.ServeHTTP(res, req)
 	}
@@ -127,6 +136,7 @@ func (r *Router) addRoute(method, p string, h HandlerFunc) {
 		Path:        p,
 		HandlerFunc: h,
 		router:      r,
+		charset:     "utf-8",
 	}
 
 	route.mux = r.mux.Handle(p, route).Methods(method)

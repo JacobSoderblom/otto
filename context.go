@@ -2,6 +2,7 @@ package otto
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -20,8 +21,9 @@ type Context interface {
 }
 
 type context struct {
-	res *Response
-	req *http.Request
+	res     *Response
+	req     *http.Request
+	charset string
 }
 
 func (c context) Request() *http.Request {
@@ -74,7 +76,7 @@ func (c context) FormValue(key string) string {
 func (c *context) render(code int, ct string, b []byte) error {
 
 	if ct != "" {
-		c.res.Header().Set(HeaderContentType, ct)
+		c.res.Header().Set(HeaderContentType, fmt.Sprintf("%s; charset=%s", ct, c.charset))
 	}
 
 	c.res.WriteHeader(code)
