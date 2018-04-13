@@ -17,6 +17,7 @@ type Route struct {
 	Method      string
 	HandlerFunc HandlerFunc
 	router      *Router
+	charset     string
 }
 
 func (r Route) ServeHTTP(res http.ResponseWriter, req *http.Request) {
@@ -25,7 +26,8 @@ func (r Route) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			ResponseWriter: res,
 			size:           0,
 		},
-		req: req,
+		req:     req,
+		charset: r.charset,
 	}
 	if err := r.router.middleware.Handle(r)(ctx); err != nil {
 		r.renderError(err, ctx)
@@ -42,8 +44,7 @@ func (r Route) renderError(err error, ctx Context) {
 	h := r.router.errorHandlers.Get(code)
 	if err = h(code, err, ctx); err != nil {
 		// ErrorHandler returned error
-		ctx.Response().WriteHeader(500)
-		ctx.Response().Write([]byte(err.Error()))
+		http.Error(ctx.Response(), err.Error(), 500)
 	}
 }
 

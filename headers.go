@@ -1,5 +1,6 @@
 package otto
 
+// Headers for HTTP
 const (
 	HeaderAccept                        = "Accept"
 	HeaderAcceptEncoding                = "Accept-Encoding"
@@ -41,5 +42,4 @@ const (
 	HeaderXXSSProtection                = "X-XSS-Protection"
 	HeaderXFrameOptions                 = "X-Frame-Options"
 	HeaderContentSecurityPolicy         = "Content-Security-Policy"
-	HeaderXCSRFToken                    = "X-CSRF-Token"
 )

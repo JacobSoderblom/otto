@@ -110,6 +110,6 @@ func Test_Router_Error_Fail(t *testing.T) {
 	res, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err, "should not throw any error")
 	b, _ := ioutil.ReadAll(res.Body)
-	assert.Equal(t, "some error", string(b))
+	assert.Contains(t, string(b), "some error")
 	assert.Equal(t, 1, triggered)
 }
