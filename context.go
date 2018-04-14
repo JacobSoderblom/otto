@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -73,6 +75,13 @@ func (c context) FormValue(key string) string {
 	return c.req.FormValue(key)
 }
 
+func (c context) FormParams() (url.Values, error) {
+	if err := c.parseForm(); err != nil {
+		return nil, errors.Wrap(err, "failed to parse form from request")
+	}
+	return c.req.Form, nil
+}
+
 func (c *context) render(code int, ct string, b []byte) error {
 
 	if ct != "" {
@@ -86,4 +95,11 @@ func (c *context) render(code int, ct string, b []byte) error {
 	}
 
 	return nil
+}
+
+func (c context) parseForm() error {
+	if strings.Contains(c.req.Header.Get(HeaderContentType), MIMEMultipartForm) {
+		return c.req.ParseMultipartForm(30 << 20) // 32MB
+	}
+	return c.req.ParseForm()
 }

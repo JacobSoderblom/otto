@@ -43,3 +43,9 @@ const (
 	HeaderXFrameOptions                 = "X-Frame-Options"
 	HeaderContentSecurityPolicy         = "Content-Security-Policy"
 )
+
+// Mime types
+const (
+	MIMEMultipartForm   = "multipart/form-data"
+	MIMEApplicationForm = "application/x-www-form-urlencoded"
+)
