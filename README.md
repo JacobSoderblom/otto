@@ -56,7 +56,7 @@ import (
 )
 
 func main() {
-  r := otto.New(opts)
+  r := otto.NewRouter()
   
   r.GET("/", func(ctx otto.Context) error {
     return ctx.String("Hello world!")
@@ -78,7 +78,7 @@ import (
 )
 
 func main() {
-  r := otto.New(opts)
+  r := otto.NewRouter()
   
   r.Use(func(next otto.HandlerFunc) otto.HandlerFunc {
     return func(ctx otto.Context) error {
@@ -107,7 +107,7 @@ import (
 )
 
 func main() {
-  r := otto.New(opts)
+  r := otto.NewRouter()
   
   errorHandlers := map[int]otto.ErrorHandler{
     400: func(code int, err error, ctx otto.Context) error {
