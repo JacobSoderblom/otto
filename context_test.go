@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Router_JSON(t *testing.T) {
+func Test_Context_JSON(t *testing.T) {
 	t.Parallel()
 	r := NewRouter(false)
 
@@ -45,7 +45,7 @@ func Test_Router_JSON(t *testing.T) {
 	assert.Contains(t, res.Header.Get(HeaderContentType), "json")
 }
 
-func Test_Router_HTML(t *testing.T) {
+func Test_Context_HTML(t *testing.T) {
 	t.Parallel()
 	r := NewRouter(false)
 
@@ -65,7 +65,7 @@ func Test_Router_HTML(t *testing.T) {
 	assert.Contains(t, res.Header.Get(HeaderContentType), "html")
 }
 
-func Test_Router_NoContent(t *testing.T) {
+func Test_Context_NoContent(t *testing.T) {
 	t.Parallel()
 	r := NewRouter(false)
 
@@ -83,7 +83,7 @@ func Test_Router_NoContent(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, res.StatusCode)
 }
 
-func Test_Router_Redirect(t *testing.T) {
+func Test_Context_Redirect(t *testing.T) {
 	t.Parallel()
 	r := NewRouter(false)
 
@@ -102,7 +102,7 @@ func Test_Router_Redirect(t *testing.T) {
 	assert.Equal(t, "testurl", res.Header.Get(HeaderLocation))
 }
 
-func Test_Router_Redirect_Invalid_Code(t *testing.T) {
+func Test_Context_Redirect_Invalid_Code(t *testing.T) {
 	t.Parallel()
 	r := NewRouter(false)
 
