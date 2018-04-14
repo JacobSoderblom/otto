@@ -26,6 +26,7 @@ type context struct {
 	res     *Response
 	req     *http.Request
 	charset string
+	query   url.Values
 }
 
 func (c context) Request() *http.Request {
@@ -80,6 +81,24 @@ func (c context) FormParams() (url.Values, error) {
 		return nil, errors.Wrap(err, "failed to parse form from request")
 	}
 	return c.req.Form, nil
+}
+
+func (c context) QueryParam(key string) string {
+	if c.query == nil {
+		c.query = c.req.URL.Query()
+	}
+	return c.query.Get(key)
+}
+
+func (c context) QueryParams() url.Values {
+	if c.query == nil {
+		c.query = c.req.URL.Query()
+	}
+	return c.query
+}
+
+func (c *context) QueryString() string {
+	return c.req.URL.RawQuery
 }
 
 func (c *context) render(code int, ct string, b []byte) error {

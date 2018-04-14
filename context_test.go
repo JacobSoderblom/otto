@@ -170,3 +170,36 @@ func Test_Context_MultipartForm(t *testing.T) {
 		}, params)
 	}
 }
+
+func Test_Context_QueryParam(t *testing.T) {
+	req := httptest.NewRequest("POST", "/?a=b", nil)
+
+	c := &context{
+		req: req,
+	}
+
+	assert.Equal(t, "b", c.QueryParam("a"))
+}
+
+func Test_Context_QueryParams(t *testing.T) {
+	req := httptest.NewRequest("POST", "/?a=b&c=d", nil)
+
+	c := &context{
+		req: req,
+	}
+
+	assert.Equal(t, url.Values{
+		"a": []string{"b"},
+		"c": []string{"d"},
+	}, c.QueryParams())
+}
+
+func Test_Context_QueryString(t *testing.T) {
+	req := httptest.NewRequest("POST", "/?a=b&c=d", nil)
+
+	c := &context{
+		req: req,
+	}
+
+	assert.Equal(t, "a=b&c=d", c.QueryString())
+}
