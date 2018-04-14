@@ -35,7 +35,7 @@ func main() {
   app := otto.New(opts)
   
   app.GET("/", func(ctx otto.Context) error {
-    return ctx.String("Hello world!")
+    return ctx.String(200, "Hello world!")
   })
   
   log.Fatal(app.Serve())
@@ -59,7 +59,7 @@ func main() {
   r := otto.NewRouter()
   
   r.GET("/", func(ctx otto.Context) error {
-    return ctx.String("Hello world!")
+    return ctx.String(200, "Hello world!")
   })
   
   log.Fatal(http.ServeAndListen(":3000", r)
@@ -88,7 +88,7 @@ func main() {
   })
   
   r.GET("/", func(ctx otto.Context) error {
-    return ctx.String("Hello world!")
+    return ctx.String(200, "Hello world!")
   })
   
   log.Fatal(http.ServeAndListen(":3000", r)
@@ -123,7 +123,7 @@ func main() {
   r.SetErrorHandlers(errorHandlers)
   
   r.GET("/", func(ctx otto.Context) error {
-    return ctx.String("Hello world!")
+    return ctx.String(400, "Hello world!")
   })
   
   log.Fatal(http.ServeAndListen(":3000", r)
