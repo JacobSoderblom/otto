@@ -60,6 +60,9 @@ func (c *context) String(code int, val string) error {
 }
 
 func (c *context) Error(code int, err error) error {
+	if err == nil {
+		return nil
+	}
 	return HTTPError{
 		Code: code,
 		Err:  err,
