@@ -25,6 +25,7 @@ type Context interface {
 	QueryParam(key string) string
 	QueryParams() url.Values
 	QueryString() string
+	Bind(interface{}) error
 }
 
 type context struct {
