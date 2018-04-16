@@ -15,6 +15,7 @@ Otto uses [Gorilla/mux](https://github.com/gorilla/mux) to define routes.
 - Centralized HTTP error handling
 - Custom error handlers to specific HTTP status codes
 - Possibility to only use the router part
+- A easy way to decode the request body (only json for now, other formats will come later)
 
 ## Examples
 
@@ -56,13 +57,13 @@ import (
 )
 
 func main() {
-  r := otto.NewRouter()
+  r := otto.NewRouter(false)
   
   r.GET("/", func(ctx otto.Context) error {
     return ctx.String(200, "Hello world!")
   })
   
-  log.Fatal(http.ServeAndListen(":3000", r)
+  log.Fatal(http.ListenAndServe(":3000", r))
 }
 ```
 
@@ -78,7 +79,7 @@ import (
 )
 
 func main() {
-  r := otto.NewRouter()
+  r := otto.NewRouter(false)
   
   r.Use(func(next otto.HandlerFunc) otto.HandlerFunc {
     return func(ctx otto.Context) error {
@@ -91,7 +92,7 @@ func main() {
     return ctx.String(200, "Hello world!")
   })
   
-  log.Fatal(http.ServeAndListen(":3000", r)
+  log.Fatal(http.ListenAndServe(":3000", r))
 }
 ```
 
@@ -107,7 +108,7 @@ import (
 )
 
 func main() {
-  r := otto.NewRouter()
+  r := otto.NewRouter(false)
   
   errorHandlers := map[int]otto.ErrorHandler{
     400: func(code int, err error, ctx otto.Context) error {
@@ -126,6 +127,39 @@ func main() {
     return ctx.String(400, "Hello world!")
   })
   
-  log.Fatal(http.ServeAndListen(":3000", r)
+  log.Fatal(http.ListenAndServe(":3000", r))
+}
+```
+
+Example of how to decode the request body
+
+
+```Go
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/JacobSoderblom/otto"
+)
+
+func main() {
+	r := otto.NewRouter(false)
+
+	r.POST("/", func(ctx otto.Context) error {
+		var body struct {
+			Msg string `json:"msg"`
+		}
+
+		if err := ctx.Bind(&body); err != nil {
+			return err
+		}
+
+		return ctx.JSON(200, body)
+	})
+
+	log.Fatal(http.ListenAndServe(":3000", r))
 }
 ```
