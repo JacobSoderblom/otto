@@ -16,7 +16,7 @@ func DefaultBinder(ctx Context, dest interface{}) error {
 	ct := ctx.Request().Header.Get(HeaderContentType)
 	body := ctx.Request().Body
 
-	if ctx.Request().Method == "GET" || ctx.Request().Method == "DELETE" {
+	if isSupported(ctx.Request().Method) {
 		err := errors.Errorf("Bind is not supported for %s method", ctx.Request().Method)
 		return ctx.Error(http.StatusBadRequest, err)
 	}
@@ -43,4 +43,8 @@ func DefaultBinder(ctx Context, dest interface{}) error {
 	}
 
 	return errors.Errorf("No support for content type '%s'", ct)
+}
+
+func isSupported(method string) bool {
+	return method == "GET" || method == "DELETE"
 }
