@@ -28,10 +28,11 @@ type Context interface {
 }
 
 type context struct {
-	res     *Response
-	req     *http.Request
-	charset string
-	query   url.Values
+	res      *Response
+	req      *http.Request
+	charset  string
+	query    url.Values
+	bindFunc BindFunc
 }
 
 func (c *context) Request() *http.Request {
@@ -104,6 +105,10 @@ func (c *context) QueryParams() url.Values {
 
 func (c *context) QueryString() string {
 	return c.req.URL.RawQuery
+}
+
+func (c *context) Bind(dest interface{}) error {
+	return c.bindFunc(c, dest)
 }
 
 func (c *context) render(code int, ct string, b []byte) error {

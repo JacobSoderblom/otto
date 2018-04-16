@@ -48,4 +48,5 @@ const (
 const (
 	MIMEMultipartForm   = "multipart/form-data"
 	MIMEApplicationForm = "application/x-www-form-urlencoded"
+	MIMEApplicationJSON = "application/json"
 )
