@@ -26,8 +26,9 @@ func (r Route) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			ResponseWriter: res,
 			size:           0,
 		},
-		req:     req,
-		charset: r.charset,
+		req:      req,
+		charset:  r.charset,
+		bindFunc: r.router.bindFunc,
 	}
 	if err := r.router.middleware.Handle(r)(ctx); err != nil {
 		r.renderError(err, ctx)

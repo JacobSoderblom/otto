@@ -18,6 +18,7 @@ type Router struct {
 	routes        Routes
 	strictSlash   bool
 	errorHandlers ErrorHandlers
+	bindFunc      BindFunc
 }
 
 // NewRouter creates a new Router with some default values
@@ -32,6 +33,7 @@ func NewRouter(strictSlash bool) *Router {
 			DefaultHandler: DefaultErrorHandler,
 			Handlers:       map[int]ErrorHandler{},
 		},
+		bindFunc: DefaultBinder,
 	}
 }
 
