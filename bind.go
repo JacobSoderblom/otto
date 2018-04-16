@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -26,7 +27,7 @@ func DefaultBinder(ctx Context, dest interface{}) error {
 		return ctx.Error(http.StatusBadRequest, errors.New("Request body cannot be empty"))
 	}
 
-	if ct == MIMEApplicationJSON {
+	if strings.HasPrefix(ct, MIMEApplicationJSON) {
 		return ctx.Error(http.StatusBadRequest, decodeJSON(body, dest))
 	}
 
