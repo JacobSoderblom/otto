@@ -2,6 +2,7 @@ package otto
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -26,20 +27,7 @@ func DefaultBinder(ctx Context, dest interface{}) error {
 	}
 
 	if ct == MIMEApplicationJSON {
-		if err := json.NewDecoder(body).Decode(dest); err != nil {
-			if u, ok := err.(*json.UnmarshalTypeError); ok {
-				err = errors.Wrapf(err, "Unmarshal type error: expected=%v, got=%v, offset=%v", u.Type, u.Value, u.Offset)
-				return ctx.Error(http.StatusBadRequest, err)
-			}
-
-			if s, ok := err.(*json.SyntaxError); ok {
-				err = errors.Wrapf(err, "Syntax error: offset=%v, error=%v", s.Offset, s.Error())
-				return ctx.Error(http.StatusBadRequest, err)
-			}
-
-			return ctx.Error(http.StatusBadRequest, errors.Wrap(err, "Could not decode json"))
-		}
-		return nil
+		return ctx.Error(http.StatusBadRequest, decodeJSON(body, dest))
 	}
 
 	return errors.Errorf("No support for content type '%s'", ct)
@@ -47,4 +35,19 @@ func DefaultBinder(ctx Context, dest interface{}) error {
 
 func isSupported(method string) bool {
 	return method == "GET" || method == "DELETE"
+}
+
+func decodeJSON(r io.Reader, dest interface{}) error {
+	if err := json.NewDecoder(r).Decode(dest); err != nil {
+		if u, ok := err.(*json.UnmarshalTypeError); ok {
+			return errors.Wrapf(err, "Unmarshal type error: expected=%v, got=%v, offset=%v", u.Type, u.Value, u.Offset)
+		}
+
+		if s, ok := err.(*json.SyntaxError); ok {
+			return errors.Wrapf(err, "Syntax error: offset=%v, error=%v", s.Offset, s.Error())
+		}
+
+		return errors.Wrap(err, "Could not decode json")
+	}
+	return nil
 }
