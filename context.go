@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/gorilla/mux"
+
 	"github.com/pkg/errors"
 )
 
@@ -20,12 +22,11 @@ type Context interface {
 	Redirect(code int, location string) error
 	Request() *http.Request
 	Response() *Response
-	FormValue(key string) string
-	FormParams() (url.Values, error)
-	QueryParam(key string) string
-	QueryParams() url.Values
+	FormParams() (*ValueParams, error)
+	QueryParams() *ValueParams
 	QueryString() string
 	Bind(interface{}) error
+	Params() Params
 }
 
 type context struct {
@@ -82,29 +83,18 @@ func (c *context) Redirect(code int, location string) error {
 	return c.render(code, "", []byte{})
 }
 
-func (c *context) FormValue(key string) string {
-	return c.req.FormValue(key)
-}
-
-func (c *context) FormParams() (url.Values, error) {
+func (c *context) FormParams() (*ValueParams, error) {
 	if err := c.parseForm(); err != nil {
 		return nil, errors.Wrap(err, "failed to parse form from request")
 	}
-	return c.req.Form, nil
+	return &ValueParams{vals: c.req.Form}, nil
 }
 
-func (c *context) QueryParam(key string) string {
+func (c *context) QueryParams() *ValueParams {
 	if c.query == nil {
 		c.query = c.req.URL.Query()
 	}
-	return c.query.Get(key)
-}
-
-func (c *context) QueryParams() url.Values {
-	if c.query == nil {
-		c.query = c.req.URL.Query()
-	}
-	return c.query
+	return &ValueParams{vals: c.query}
 }
 
 func (c *context) QueryString() string {
@@ -113,6 +103,10 @@ func (c *context) QueryString() string {
 
 func (c *context) Bind(dest interface{}) error {
 	return c.bindFunc(c, dest)
+}
+
+func (c *context) Params() Params {
+	return Params(mux.Vars(c.req))
 }
 
 func (c *context) render(code int, ct string, b []byte) error {
