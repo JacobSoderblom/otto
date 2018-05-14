@@ -37,6 +37,18 @@ func (e ErrorHandlers) Get(code int) ErrorHandler {
 	return e.DefaultHandler
 }
 
+// Copy creates a copy of the ErrorHandlers struct
+func (e ErrorHandlers) Copy() ErrorHandlers {
+	handlersCopy := make(map[int]ErrorHandler)
+	for key, value := range e.Handlers {
+		handlersCopy[key] = value
+	}
+	return ErrorHandlers{
+		DefaultHandler: e.DefaultHandler,
+		Handlers:       handlersCopy,
+	}
+}
+
 // DefaultErrorHandler will return the error as json
 func DefaultErrorHandler(code int, err error, ctx Context) error {
 	ct := ctx.Request().Header.Get(HeaderContentType)

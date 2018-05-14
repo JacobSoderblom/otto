@@ -2,6 +2,7 @@ package otto
 
 import (
 	"fmt"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -116,6 +117,10 @@ func Test_Router_Group(t *testing.T) {
 		return ctx.String(200, "GET")
 	})
 
+	g.GET("/error", func(ctx Context) error {
+		return ctx.Error(400, errors.New("api error"))
+	})
+
 	ts := httptest.NewServer(r)
 	defer ts.Close()
 
@@ -132,6 +137,14 @@ func Test_Router_Group(t *testing.T) {
 	assert.NoError(t, err, "should not throw any error")
 	b, _ = ioutil.ReadAll(res.Body)
 	assert.Equal(t, "GET", string(b))
+
+	req, err = http.NewRequest("GET", fmt.Sprintf("%s/api/error", ts.URL), nil)
+	assert.NoError(t, err, "should not throw any error")
+	res, err = http.DefaultClient.Do(req)
+	assert.NoError(t, err, "should not throw any error")
+	b, _ = ioutil.ReadAll(res.Body)
+	assert.Equal(t, "api error", string(b))
+	assert.Equal(t, 400, res.StatusCode)
 }
 
 func Test_Router_ServeFiles(t *testing.T) {
