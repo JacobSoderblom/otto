@@ -80,10 +80,11 @@ func (r *Router) PATCH(p string, h HandlerFunc) {
 // Group creates a new Router with a prefix for all routes
 func (r *Router) Group(p string) *Router {
 	return &Router{
-		mux:        r.mux,
-		prefix:     p,
-		routes:     Routes{},
-		middleware: r.middleware.Copy(),
+		mux:           r.mux,
+		prefix:        p,
+		routes:        Routes{},
+		middleware:    r.middleware.Copy(),
+		errorHandlers: r.errorHandlers.Copy(),
 	}
 }
 
