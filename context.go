@@ -27,7 +27,12 @@ type Context interface {
 	QueryString() string
 	Bind(interface{}) error
 	Params() Params
+	Set(key string, val interface{})
+	Get(key string) interface{}
 }
+
+// Store is a generic map
+type Store map[string]interface{}
 
 type context struct {
 	res      *Response
@@ -35,6 +40,7 @@ type context struct {
 	charset  string
 	query    url.Values
 	bindFunc BindFunc
+	store    map[string]interface{}
 }
 
 func (c *context) Request() *http.Request {
@@ -107,6 +113,17 @@ func (c *context) Bind(dest interface{}) error {
 
 func (c *context) Params() Params {
 	return Params(mux.Vars(c.req))
+}
+
+func (c *context) Set(key string, val interface{}) {
+	if c.store == nil {
+		c.store = make(Store)
+	}
+	c.store[key] = val
+}
+
+func (c *context) Get(key string) interface{} {
+	return c.store[key]
 }
 
 func (c *context) render(code int, ct string, b []byte) error {

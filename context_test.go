@@ -207,3 +207,14 @@ func Test_Context_Params(t *testing.T) {
 	_, err = http.DefaultClient.Do(req)
 	assert.NoError(t, err, "should not throw any error")
 }
+
+func Test_Context_Set_Get(t *testing.T) {
+	c := &context{}
+
+	c.Set("test", 1)
+
+	numb := c.Get("test").(int)
+
+	assert.NotEmpty(t, c.store)
+	assert.Equal(t, 1, numb)
+}
