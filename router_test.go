@@ -1,8 +1,8 @@
 package otto
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -101,6 +101,76 @@ func Test_Router_Methods_Middleware(t *testing.T) {
 	}
 
 	assert.Equal(t, 4, triggered)
+}
+
+func Test_Router_Middlware_order(t *testing.T) {
+	t.Parallel()
+	r := NewRouter(false)
+
+	triggered := false
+
+	r.Use(func(h HandlerFunc) HandlerFunc {
+		return func(ctx Context) error {
+			triggered = true
+			return h(ctx)
+		}
+	})
+
+	r.Use(func(h HandlerFunc) HandlerFunc {
+		return func(ctx Context) error {
+			if !assert.Equal(t, triggered, true, "middlewares was not triggered in right order") {
+				t.FailNow()
+			}
+			return h(ctx)
+		}
+	})
+
+	r.GET("/", func(ctx Context) error {
+		return ctx.String(200, "test")
+	})
+
+	ts := httptest.NewServer(r)
+	defer ts.Close()
+
+	req, err := http.NewRequest("GET", ts.URL, nil)
+	assert.NoError(t, err, "should not throw any error")
+	http.DefaultClient.Do(req)
+}
+
+func Test_Router_Group_Middlware_order(t *testing.T) {
+	t.Parallel()
+	r := NewRouter(false)
+
+	triggered := false
+
+	r.Use(func(h HandlerFunc) HandlerFunc {
+		return func(ctx Context) error {
+			triggered = true
+			return h(ctx)
+		}
+	})
+
+	g := r.Group("/")
+
+	g.Use(func(h HandlerFunc) HandlerFunc {
+		return func(ctx Context) error {
+			if !assert.Equal(t, triggered, true, "middlewares was not triggered in right order") {
+				t.FailNow()
+			}
+			return h(ctx)
+		}
+	})
+
+	g.GET("/", func(ctx Context) error {
+		return ctx.String(200, "test")
+	})
+
+	ts := httptest.NewServer(r)
+	defer ts.Close()
+
+	req, err := http.NewRequest("GET", ts.URL, nil)
+	assert.NoError(t, err, "should not throw any error")
+	http.DefaultClient.Do(req)
 }
 
 func Test_Router_Group(t *testing.T) {
