@@ -6,7 +6,8 @@ type Middleware func(HandlerFunc) HandlerFunc
 type middlewareStack []Middleware
 
 func (m *middlewareStack) Add(mm ...Middleware) {
-	*m = append(*m, mm...)
+	stack := append(middlewareStack{}, mm...)
+	*m = append(stack, *m...)
 }
 
 func (m middlewareStack) Handle(r Route) HandlerFunc {
