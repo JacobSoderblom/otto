@@ -23,7 +23,7 @@ type Options struct {
 	MaxHeaderBytes    int
 	ctx               gocontext.Context
 	cancel            gocontext.CancelFunc
-	DisabelHTTP2      bool
+	DisableHTTP2      bool
 }
 
 // NewOptions creates new Options with default values
@@ -136,7 +136,7 @@ func (a *App) serve(s *http.Server) error {
 
 func (a *App) serveTLS(s *http.Server) error {
 
-	if !a.opts.DisabelHTTP2 {
+	if !a.opts.DisableHTTP2 {
 		s.TLSConfig.NextProtos = append(s.TLSConfig.NextProtos, "h2")
 	}
 
