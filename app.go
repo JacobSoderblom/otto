@@ -2,11 +2,15 @@ package otto
 
 import (
 	gocontext "context"
+	"crypto/tls"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/pkg/errors"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 // Options has all options that can be passed to App
@@ -19,6 +23,7 @@ type Options struct {
 	MaxHeaderBytes    int
 	ctx               gocontext.Context
 	cancel            gocontext.CancelFunc
+	DisabelHTTP2      bool
 }
 
 // NewOptions creates new Options with default values
@@ -29,7 +34,11 @@ func NewOptions() Options {
 // App holds on to options and the underlying router, the middleware, and more
 type App struct {
 	*Router
-	opts Options
+	opts           Options
+	autoTLSManager autocert.Manager
+	tlsConfig      *tls.Config
+	certFile       string
+	keyFile        string
 }
 
 // New creates a new App
@@ -37,7 +46,38 @@ func New(opts Options) *App {
 	return &App{
 		Router: NewRouter(opts.StrictSlash),
 		opts:   opts,
+		autoTLSManager: autocert.Manager{
+			Prompt: autocert.AcceptTOS,
+		},
 	}
+}
+
+// UseAutoTLS will setup autocert.Manager and request cert from https://letsencrypt.org
+func (a *App) UseAutoTLS(cache autocert.DirCache) {
+	a.autoTLSManager.Cache = cache
+
+	// start autotlsmanager httphandler
+	go http.ListenAndServe(":http", a.autoTLSManager.HTTPHandler(nil))
+
+	a.tlsConfig = new(tls.Config)
+	a.tlsConfig.GetCertificate = a.autoTLSManager.GetCertificate
+}
+
+// UseTLS will use tls.LoadX509KeyPair to setup certificate for TLS
+func (a *App) UseTLS(certFile, keyFile string) error {
+	if certFile == "" || keyFile == "" {
+		return errors.New("invalid tls configuration")
+	}
+
+	a.tlsConfig = new(tls.Config)
+	a.tlsConfig.Certificates = make([]tls.Certificate, 1)
+
+	var err error
+	if a.tlsConfig.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile); err != nil {
+		return errors.Wrapf(err, "could not load keypair from %s %s", certFile, keyFile)
+	}
+
+	return nil
 }
 
 // Serve serves the application at the specified address and
@@ -47,22 +87,31 @@ func (a *App) Serve() error {
 	ctx, cancel := interruptWithCancel(a.opts.ctx)
 	defer cancel()
 
-	s := &http.Server{
+	var s *http.Server
+
+	s = &http.Server{
 		Addr:              a.opts.Addr,
 		Handler:           a,
 		ReadHeaderTimeout: a.opts.ReadHeaderTimeout,
 		WriteTimeout:      a.opts.WriteTimeout,
 		IdleTimeout:       a.opts.IdleTimeout,
 		MaxHeaderBytes:    a.opts.MaxHeaderBytes,
+		TLSConfig:         a.tlsConfig,
 	}
 
 	var err error
 
 	go func() {
-		if err = s.ListenAndServe(); err != nil {
-			err = a.Close(err)
+		if a.tlsConfig == nil {
+			err = a.serve(s)
+		} else {
+			err = a.serveTLS(s)
 		}
 	}()
+
+	if err != nil {
+		return err
+	}
 
 	<-ctx.Done()
 
@@ -73,7 +122,26 @@ func (a *App) Serve() error {
 func (a *App) Close(err error) error {
 	a.opts.cancel()
 	if err != gocontext.Canceled {
-		return err
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
+func (a *App) serve(s *http.Server) error {
+	if err := s.ListenAndServe(); err != nil {
+		return a.Close(err)
+	}
+	return nil
+}
+
+func (a *App) serveTLS(s *http.Server) error {
+
+	if !a.opts.DisabelHTTP2 {
+		s.TLSConfig.NextProtos = append(s.TLSConfig.NextProtos, "h2")
+	}
+
+	if err := s.ListenAndServeTLS(a.certFile, a.keyFile); err != nil {
+		return a.Close(err)
 	}
 	return nil
 }

@@ -1,4 +1,5 @@
 # Otto
+
 [![GoDoc](https://godoc.org/github.com/JacobSoderblom/otto?status.svg)](http://godoc.org/github.com/JacobSoderblom/otto)
 [![Build Status](https://travis-ci.org/JacobSoderblom/otto.svg?branch=master)](https://travis-ci.org/JacobSoderblom/otto)
 [![Go Report Card](https://goreportcard.com/badge/github.com/JacobSoderblom/otto)](https://goreportcard.com/report/github.com/JacobSoderblom/otto)
@@ -16,6 +17,7 @@ Otto uses [Gorilla/mux](https://github.com/gorilla/mux) to define routes.
 - Custom error handlers to specific HTTP status codes
 - Possibility to only use the router part
 - A easy way to decode the request body (only json for now, other formats will come later)
+- Automatic TLS via Let’s Encrypt
 
 ## Examples
 
@@ -32,13 +34,67 @@ import (
 func main() {
   opts := otto.NewOptions()
   opts.Addr = ":3000"
-  
+
   app := otto.New(opts)
-  
+
   app.GET("/", func(ctx otto.Context) error {
     return ctx.String(200, "Hello world!")
   })
-  
+
+  log.Fatal(app.Serve())
+}
+```
+
+Example of how to use Otto with TLS
+
+```Go
+package main
+
+import (
+  "log"
+  "github.com/JacobSoderblom/otto"
+)
+
+func main() {
+  opts := otto.NewOptions()
+  opts.Addr = ":443"
+
+  app := otto.New(opts)
+
+  if err := app.UseTLS("path/to/cert", "path/to/key"); err != nil {
+    log.Fatal(err)
+  }
+
+  app.GET("/", func(ctx otto.Context) error {
+    return ctx.String(200, "Hello world!")
+  })
+
+  log.Fatal(app.Serve())
+}
+```
+
+Example of how to use Otto with Auto TLS from Let’s Encrypt
+
+```Go
+package main
+
+import (
+  "log"
+  "github.com/JacobSoderblom/otto"
+)
+
+func main() {
+  opts := otto.NewOptions()
+  opts.Addr = ":443"
+
+  app := otto.New(opts)
+
+  app.UseAutoTLS(autocert.DirCache("/path/to/cache"))
+
+  app.GET("/", func(ctx otto.Context) error {
+    return ctx.String(200, "Hello world!")
+  })
+
   log.Fatal(app.Serve())
 }
 ```
@@ -47,7 +103,6 @@ Example of how to use the Router without the Otto App.
 
 The Router implements the `http.Handler` so it is easy to use without the `App`!
 
-
 ```Go
 package main
 
@@ -58,18 +113,17 @@ import (
 
 func main() {
   r := otto.NewRouter(false)
-  
+
   r.GET("/", func(ctx otto.Context) error {
     return ctx.String(200, "Hello world!")
   })
-  
+
   log.Fatal(http.ListenAndServe(":3000", r))
 }
 ```
 
 Example of using middlewares
 
-
 ```Go
 package main
 
@@ -80,24 +134,23 @@ import (
 
 func main() {
   r := otto.NewRouter(false)
-  
+
   r.Use(func(next otto.HandlerFunc) otto.HandlerFunc {
     return func(ctx otto.Context) error {
       ctx.Set("some key", "I'm a middleware!")
       return next(ctx)
     }
   })
-  
+
   r.GET("/", func(ctx otto.Context) error {
     return ctx.String(200, "Hello world!")
   })
-  
+
   log.Fatal(http.ListenAndServe(":3000", r))
 }
 ```
 
 Example of how to associate error handler to HTTP status code
-
 
 ```Go
 package main
@@ -109,7 +162,7 @@ import (
 
 func main() {
   r := otto.NewRouter(false)
-  
+
   errorHandlers := map[int]otto.ErrorHandler{
     400: func(code int, err error, ctx otto.Context) error {
       // do some awesome error handling!
@@ -120,19 +173,18 @@ func main() {
       return ctx.Error(code, err)
     },
   }
-  
+
   r.SetErrorHandlers(errorHandlers)
-  
+
   r.GET("/", func(ctx otto.Context) error {
     return ctx.String(400, "Hello world!")
   })
-  
+
   log.Fatal(http.ListenAndServe(":3000", r))
 }
 ```
 
 Example of how to decode the request body
-
 
 ```Go
 package main
