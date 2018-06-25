@@ -10,6 +10,12 @@
 			"revisionTime": "2018-03-14T08:05:35Z"
 		},
 		{
+			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
+			"path": "github.com/gorilla/context",
+			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
+			"revisionTime": "2016-08-17T18:46:32Z"
+		},
+		{
 			"checksumSHA1": "+i76HB4vEOFz+vLYsUmThS6oeQI=",
 			"path": "github.com/gorilla/mux",
 			"revision": "24fca303ac6da784b9e8269f724ddeb0b2eea5e7",
@@ -33,6 +39,18 @@
 			"path": "github.com/stretchr/testify/assert",
 			"revision": "c679ae2cc0cb27ec3293fea7e254e47386f05d69",
 			"revisionTime": "2018-03-14T08:05:35Z"
+		},
+		{
+			"checksumSHA1": "zHLlCNnnX/KNVue2tHr+FWxbszA=",
+			"path": "golang.org/x/crypto/acme",
+			"revision": "b2aa35443fbc700ab74c586ae79b81c171851023",
+			"revisionTime": "2018-04-03T08:00:15Z"
+		},
+		{
+			"checksumSHA1": "6NdRp9OYL38e71vEtcQtSkN/ZbA=",
+			"path": "golang.org/x/crypto/acme/autocert",
+			"revision": "b2aa35443fbc700ab74c586ae79b81c171851023",
+			"revisionTime": "2018-04-03T08:00:15Z"
 		}
 	],
 	"rootPath": "github.com/JacobSoderblom/otto"
