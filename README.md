@@ -3,6 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/JacobSoderblom/otto?status.svg)](http://godoc.org/github.com/JacobSoderblom/otto)
 [![Build Status](https://travis-ci.org/JacobSoderblom/otto.svg?branch=master)](https://travis-ci.org/JacobSoderblom/otto)
 [![Go Report Card](https://goreportcard.com/badge/github.com/JacobSoderblom/otto)](https://goreportcard.com/report/github.com/JacobSoderblom/otto)
+[![codecov](https://codecov.io/gh/JacobSoderblom/otto/branch/master/graph/badge.svg)](https://codecov.io/gh/JacobSoderblom/otto)
 
 Otto is an easy way to use HTTP in golang. You can either use the Otto App with features like gracefully shutdown on OS signals interrupt and kill, or just use the Otto Router and handle the HTTP Server as you like!
 
